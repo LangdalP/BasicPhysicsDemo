@@ -1,0 +1,7 @@
+
+# %f : input file name
+# %o : output file name
+# %B : base name of input file
+
+: foreach *.cpp |> g++ -Wall -std=c++11 -I../include -c %f -o %o |> ../build-temp/%B.o
+: ../build-temp/main.o |> g++ %f -lSDL2 -lSDL2_gfx -o %o |> ../bin/program
