@@ -1,14 +1,14 @@
-# Compiled Object files
+# Compiled object files
 *.slo
 *.lo
 *.o
 *.obj
 
-# Precompiled Headers
+# Precompiled headers
 *.gch
 *.pch
 
-# Compiled Dynamic libraries
+# Compiled dynamic libraries
 *.so
 *.dylib
 *.dll
@@ -17,7 +17,7 @@
 *.mod
 *.smod
 
-# Compiled Static libraries
+# Compiled static libraries
 *.lai
 *.la
 *.a
@@ -27,3 +27,11 @@
 *.exe
 *.out
 *.app
+
+# Executable and build folders
+bin/
+build-temp/
+
+# Tup folder (tup is a make-alternative)
+.tup/
+
