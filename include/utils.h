@@ -7,23 +7,8 @@
 
 #include "types.h"
 #include "constants.h"
+#include "logging.h"
 
-void log_info(const std::string &msg)
-{
-    std::cerr << "[INFO] " << msg << std::endl;
-}
-
-void log_error(const std::string &msg)
-{
-    std::cerr << "[ERROR] " << msg << std::endl;
-}
-
-void log_sdl_error(const std::string &msg)
-{
-    std::cerr << "[SDL-ERROR] " << msg << " (" << SDL_GetError() << ")" << std::endl;
-}
-
-// TODO: Replace cout use with log use
 sdl_init_result basic_init()
 {
     sdl_init_result result = {nullptr, nullptr};
