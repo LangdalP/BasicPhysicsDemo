@@ -9,52 +9,14 @@
 #include "resources.h"
 #include "constants.h"
 #include "utils.h"
+#include "world.h"
+#include "gfx.h"
 
 using std::cout;
 using std::endl;
 
-#define PI 3.14159265
-
-// TODO: This is not ECS-like
-struct l_circle {
-    Sint16 x;
-    Sint16 y;
-    float dx;
-    float dy;
-    Sint16 rad;
-};
-
-std::vector<l_circle> circles;
-
-void init_circles(int count)
-{
-    srand(1250424);
-    for (int i = 0; i < count; ++i) {
-        // Circle
-        l_circle circle;
-        circle.x = rand() % DEF_WIDTH;
-        circle.y = rand() % DEF_HEIGHT;
-        circle.dx = ( rand()/(float)RAND_MAX ) - 0.5;
-        circle.dy = ( rand()/(float)RAND_MAX ) - 0.5;
-        circle.rad = 30;
-        circles.push_back(circle);
-    }
-}
-
-void updateCircles(uint32_t t, uint32_t dt)
-{
-    for (auto &circle : circles) {
-        circle.x += (int16_t)(dt*circle.dx);
-        circle.y += (int16_t)(dt*circle.dy);
-    }
-}
-
-void drawCircles(SDL_Renderer *ren)
-{
-    for (auto &circle : circles) {
-        filledCircleRGBA(ren, circle.x, circle.y, circle.rad, 255, 255, 255, 255);
-    }
-}
+const static int VELOCITY_ITERATIONS = 8;
+const static int POSITION_ITERATIONS = 3;
 
 /*
  * Terminology: Timestep = the dt used for world simulation
@@ -68,14 +30,14 @@ void drawCircles(SDL_Renderer *ren)
  *
  */
 
-void main_loop(SDL_Renderer *ren)
+void main_loop(SDL_Renderer *ren, b2World *world)
 {
-    init_circles(10);
-
     SDL_Event e;
     uint32_t t = 0;
-    uint32_t dt = 10;   // Aiming for 100 fps
+    uint32_t dt = 8;   // Aiming for 100 fps
     uint32_t current_time = SDL_GetTicks();
+    uint32_t loop_start_time = current_time;
+    uint32_t frame_counter = 0;
 
     bool quit = false;
     while ( !quit ) {
@@ -93,7 +55,7 @@ void main_loop(SDL_Renderer *ren)
         while ( frame_time > 0 ) {
             uint32_t delta_time = std::min( frame_time, dt );
             // Update world here
-            updateCircles(t, delta_time);
+            world->Step((float)delta_time/1000.0, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
             frame_time -= delta_time;
             t += delta_time;
         }
@@ -101,9 +63,15 @@ void main_loop(SDL_Renderer *ren)
         // Rendering
         SDL_SetRenderDrawColor(ren, 20, 20, 20, 0);
         SDL_RenderClear(ren);
-        drawCircles(ren);
+        draw_world_polygons(ren, world);
         SDL_RenderPresent(ren);
+        ++frame_counter;
     }
+
+    uint32_t loop_duration = current_time - loop_start_time;
+    float avg_fps = (float)frame_counter/(loop_duration/1000.0);
+
+    printf("Avg. fps: %f\n", avg_fps);
 
 }
 
@@ -116,7 +84,10 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    main_loop(sdl.ren);
+    // World and bodies are never cleaned up... should they?
+    b2World *world = create_world_with_test_objects();
+
+    main_loop(sdl.ren, world);
 
     SDL_DestroyRenderer(sdl.ren);
     SDL_DestroyWindow(sdl.win);

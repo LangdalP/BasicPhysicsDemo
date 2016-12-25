@@ -8,6 +8,11 @@
 #include "types.h"
 #include "constants.h"
 
+void log_info(const std::string &msg)
+{
+    std::cerr << "[INFO] " << msg << std::endl;
+}
+
 void log_error(const std::string &msg)
 {
     std::cerr << "[ERROR] " << msg << std::endl;
