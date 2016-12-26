@@ -16,12 +16,15 @@ b2World* create_world_with_test_objects()
     // Bodies and fixtures
     b2BodyDef ballBodyDef;
     ballBodyDef.type = b2_dynamicBody;
-    ballBodyDef.position.Set( 10, 10 );
+    ballBodyDef.position.Set( 0, 5);
     ballBodyDef.angle = 0;
     b2Body *ballBody = world->CreateBody( &ballBodyDef );
+    // Reuse def for second ball
+    ballBodyDef.position.Set( 1, 1.1);
+    b2Body *ballBody2 = world->CreateBody( &ballBodyDef );
 
     b2CircleShape circleShape;
-    circleShape.m_p.Set(0, 0);
+    circleShape.m_p.Set( 0, 0 );
     circleShape.m_radius = 1;
 
     b2FixtureDef ballFixtureDef;
@@ -29,15 +32,17 @@ b2World* create_world_with_test_objects()
     ballFixtureDef.density = 1;
     ballFixtureDef.restitution = 1;
     ballBody->CreateFixture( &ballFixtureDef );
+    // Reuse def for second ball
+    ballBody2->CreateFixture( &ballFixtureDef );
 
     // Edge shapes
     b2BodyDef groundBodyDef;
     groundBodyDef.type = b2_staticBody;
-    groundBodyDef.position.Set( 0, 0 );
+    groundBodyDef.position.Set( 0.0, 0.1 );
     b2Body *groundBody = world->CreateBody( &groundBodyDef );
 
     b2EdgeShape groundShape;
-    groundShape.Set( b2Vec2( -15, 0 ), b2Vec2( 15, 0 ) );
+    groundShape.Set( b2Vec2( -15, 0.0 ), b2Vec2( 15, 0.0 ) );
 
     b2FixtureDef groundFixtureDef;
     groundFixtureDef.shape = &groundShape;

@@ -3,5 +3,5 @@
 # %o : output file name
 # %B : base name of input file
 
-: foreach *.cpp |> g++ -Wall -std=c++11 -I../include -c %f -o %o |> ../build-temp/%B.o
-: ../build-temp/gfx.o ../build-temp/world.o ../build-temp/main.o |> g++ %f -lSDL2 -lSDL2_gfx -lBox2D -o %o |> ../bin/program
+: foreach *.cpp |> g++ -g -Wall -std=c++11 -I../include -c %f -o %o |> ../build-temp/%B.o
+: ../build-temp/gfx.o ../build-temp/world.o ../build-temp/main.o |> g++ -g %f -lsfml-graphics -lsfml-window -lsfml-system -lBox2D -o %o |> ../bin/program

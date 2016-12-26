@@ -1,37 +1,15 @@
 #ifndef L_UTILS
 #define L_UTILS
 
-#include <string>
-#include <iostream>
-#include <SDL2/SDL.h>
+#include <SFML/Graphics.hpp>
+#include <Box2D/Box2D.h>
+#include "gfx.h"
 
-#include "types.h"
-#include "constants.h"
-#include "logging.h"
-
-sdl_init_result basic_init()
+inline sf::Vector2f WorldPosToScreenPos(b2Vec2 worldPos, unsigned int sWidth, unsigned int sHeight)
 {
-    sdl_init_result result = {nullptr, nullptr};
-    // Init video subsystem
-    if (SDL_Init(SDL_INIT_VIDEO) != 0){
-        log_sdl_error("SDL_Init failed");
-        return result;
-    }
-    result.win = SDL_CreateWindow("Hello World!", 100, 100, DEF_WIDTH, DEF_HEIGHT, SDL_WINDOW_SHOWN);
-    if (result.win == nullptr){
-        log_sdl_error("SDL_CreateWindow failed");
-        SDL_Quit();
-        return result;
-    }
-    result.ren = SDL_CreateRenderer(result.win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    if (result.ren == nullptr){
-        SDL_DestroyWindow(result.win);
-        log_sdl_error("SDL_CreateRenderer failed");
-        SDL_Quit();
-        return result;
-    }
-
-    return result;
+    float x = worldPos.x * PX_PER_METER + sWidth / 2;
+    float y = sHeight - worldPos.y * PX_PER_METER;
+    return sf::Vector2f(x, y);
 }
 
 #endif /* ifndef L_UTILS */

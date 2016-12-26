@@ -1,97 +1,74 @@
-#include <iostream>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL2_gfxPrimitives.h>
-#include <math.h>       // For sin/cos
-#include <vector>       // For vec (circles)
-#include <stdlib.h>     // For rand
+#include <iostream>     // For debugging
 #include <algorithm>    // For min
+#include <SFML/Window.hpp>
+#include <SFML/Graphics.hpp>
+#include <SFML/System/Time.hpp>
+#include <Box2D/Box2D.h>
 
-#include "resources.h"
 #include "constants.h"
-#include "utils.h"
+#include "logging.h"
 #include "world.h"
 #include "gfx.h"
-
-using std::cout;
-using std::endl;
 
 const static int VELOCITY_ITERATIONS = 8;
 const static int POSITION_ITERATIONS = 3;
 
-/*
- * Terminology: Timestep = the dt used for world simulation
- * Idea: Don't want it to "run free" because a variable timestep will give an inconsistent feel
- *      Furthermore, really big timesteps can break simulations
- * How:
- *  - Semi-fixed timestep (rendering and world updates in lock-step)
- *  - Time-consuming world (render-loop "produces" time, world/physics consumes it in discrete steps)
- *      * Frames will have some "left-over" time that is not simulated, giving temporal aliasing
- *      * Solution: Interpolate previous world state and next
- *
- */
+const static sf::Color col_bg(30, 30, 30);
 
-void main_loop(SDL_Renderer *ren, b2World *world)
+// Semi-fixed timestep ( http://gafferongames.com/game-physics/fix-your-timestep/ )
+void main_loop(sf::RenderWindow &ren, b2World *world)
 {
-    SDL_Event e;
-    uint32_t t = 0;
-    uint32_t dt = 8;   // Aiming for 100 fps
-    uint32_t current_time = SDL_GetTicks();
-    uint32_t loop_start_time = current_time;
+    const float dt = 1000.0/60;
+    sf::Clock frameClock;
+    sf::Clock loopClock;
     uint32_t frame_counter = 0;
 
-    bool quit = false;
-    while ( !quit ) {
+    while (ren.isOpen()) {
         // Event handling
-        if (SDL_PollEvent(&e)) 
-        { 
-            if (e.type == SDL_QUIT) 
-                quit = true;
-        } 
-        
-        // World update
-        uint32_t new_time = SDL_GetTicks();
-        uint32_t frame_time = new_time - current_time;
-        current_time = new_time;
-        while ( frame_time > 0 ) {
-            uint32_t delta_time = std::min( frame_time, dt );
-            // Update world here
-            world->Step((float)delta_time/1000.0, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
-            frame_time -= delta_time;
-            t += delta_time;
+        sf::Event event;
+        while (ren.pollEvent(event)) {
+            if (event.type == sf::Event::Closed)
+                ren.close();
         }
 
+        // World update
+        sf::Time frameTime = frameClock.restart(); // Restart from 0 and return elapsed
+
+        while ( frameTime.asSeconds() > 0 ) {
+            float deltaTime = std::min( frameTime.asSeconds(), dt );
+            // Update world here
+            world->Step(deltaTime, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
+            frameTime = frameTime - sf::seconds(deltaTime);
+        }
+        
         // Rendering
-        SDL_SetRenderDrawColor(ren, 20, 20, 20, 0);
-        SDL_RenderClear(ren);
+        ren.clear(col_bg);
         draw_world_polygons(ren, world);
-        SDL_RenderPresent(ren);
+        ren.display();
         ++frame_counter;
     }
 
-    uint32_t loop_duration = current_time - loop_start_time;
-    float avg_fps = (float)frame_counter/(loop_duration/1000.0);
+    float loopDuration = loopClock.getElapsedTime().asSeconds();
+    float avgFPS = (float)frame_counter/loopDuration;
 
-    printf("Avg. fps: %f\n", avg_fps);
+    printf("Avg. fps: %f\n", avgFPS);
 
 }
 
 int main(int argc, char *argv[])
 {
-    cout << "Hello, SDL world!" << endl;
+    sf::VideoMode videoMode(DEF_WIDTH, DEF_HEIGHT);
+    sf::RenderWindow window(videoMode,"Drop the Bass");
+    window.setVerticalSyncEnabled(true);
 
-    sdl_init_result sdl = basic_init();
-    if (sdl.win == nullptr || sdl.ren == nullptr) {
-        return -1;
-    }
+    TestRotation();
+
+    std::cout << "Window: " << window.getSize().x << ", " << window.getSize().y << std::endl;
 
     // World and bodies are never cleaned up... should they?
     b2World *world = create_world_with_test_objects();
-
-    main_loop(sdl.ren, world);
-
-    SDL_DestroyRenderer(sdl.ren);
-    SDL_DestroyWindow(sdl.win);
-    SDL_Quit();
+    main_loop(window, world);
 
     return 0;
 }
+

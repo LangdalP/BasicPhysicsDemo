@@ -1,3 +1,6 @@
 # TODO
 
-- Fix coordinate conversions. Box2D has "logical" coordinates, SDL has screen coordinates.
+- Polish coordinate transformations
+- Find out why the "bouncing balls" go below the screen edge
+- Generalize polygon drawing to more than just circles
+
