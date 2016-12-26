@@ -61,8 +61,6 @@ int main(int argc, char *argv[])
     sf::RenderWindow window(videoMode,"Drop the Bass");
     window.setVerticalSyncEnabled(true);
 
-    TestRotation();
-
     std::cout << "Window: " << window.getSize().x << ", " << window.getSize().y << std::endl;
 
     // World and bodies are never cleaned up... should they?

@@ -6,7 +6,6 @@
 
 #define PX_PER_METER 50
 
-void TestRotation();
 int draw_world_polygons(sf::RenderWindow &ren, b2World *world);
 
 #endif /* ifndef L_GFX */
