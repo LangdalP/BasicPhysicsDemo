@@ -55,7 +55,21 @@ inline void DrawLine(sf::RenderWindow &ren, b2Body *body, b2EdgeShape *shape, un
 
 }
 
-int draw_world_polygons(sf::RenderWindow &ren, b2World *world)
+inline void DrawPolygon(sf::RenderWindow &ren, b2Body *body, b2PolygonShape *shape, unsigned sWidth, unsigned sHeight)
+{
+    sf::ConvexShape cShape;
+    int nVertices = shape->GetVertexCount();
+    cShape.setPointCount(nVertices);
+    for (int i = 0; i < nVertices; ++i) {
+        const b2Vec2 worldVertex = body->GetWorldPoint(shape->GetVertex(i));
+        const sf::Vector2f screenPos = WorldPosToScreenPos(worldVertex, sWidth, sHeight);
+        cShape.setPoint(i, screenPos);
+    }
+    cShape.setFillColor(col);
+    ren.draw(cShape);
+}
+
+void DrawWorldPolygons(sf::RenderWindow &ren, b2World *world)
 {
     auto screenSize = ren.getSize();
     for ( b2Body* b = world->GetBodyList(); b; b = b->GetNext()) {
@@ -63,15 +77,18 @@ int draw_world_polygons(sf::RenderWindow &ren, b2World *world)
         for (b2Fixture* f = b->GetFixtureList(); f; f = f->GetNext()) {
             b2Shape::Type shapeType = f->GetType();
             if ( shapeType == b2Shape::e_circle ) {
-                b2CircleShape* cShape = (b2CircleShape*)f->GetShape();
+                b2CircleShape *cShape = (b2CircleShape*)f->GetShape();
                 DrawCircle(ren, b, cShape, screenSize.x, screenSize.y);
-            } else if ( shapeType == b2Shape::e_edge ) {
-                b2EdgeShape* edgeShape = (b2EdgeShape*)f->GetShape();
+            }
+            else if ( shapeType == b2Shape::e_edge ) {
+                b2EdgeShape *edgeShape = (b2EdgeShape*)f->GetShape();
                 DrawLine(ren, b, edgeShape, screenSize.x, screenSize.y);
+            }
+            else if ( shapeType == b2Shape::e_polygon ) {
+                b2PolygonShape *polyShape = (b2PolygonShape*)f->GetShape();
+                DrawPolygon(ren, b, polyShape, screenSize.x, screenSize.y);
             }
         }
     }
-
-    return 0;
 }
 

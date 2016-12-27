@@ -43,7 +43,7 @@ void main_loop(sf::RenderWindow &ren, b2World *world)
         
         // Rendering
         ren.clear(col_bg);
-        draw_world_polygons(ren, world);
+        DrawWorldPolygons(ren, world);
         ren.display();
         ++frame_counter;
     }
@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
     std::cout << "Window: " << window.getSize().x << ", " << window.getSize().y << std::endl;
 
     // World and bodies are never cleaned up... should they?
-    b2World *world = create_world_with_test_objects();
+    b2World *world = CreateTestWorld();
     main_loop(window, world);
 
     return 0;
