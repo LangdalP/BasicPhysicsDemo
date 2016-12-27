@@ -75,11 +75,3 @@ int draw_world_polygons(sf::RenderWindow &ren, b2World *world)
     return 0;
 }
 
-int RunCircleRenderSystem(sf::RenderWindow &ren, std::vector<CircleRenderComponent> comps)
-{
-    for (auto &circleComp : comps) {
-        circleComp.shape.setPosition(circleComp.cx, circleComp.cy);
-        ren.draw(circleComp.shape);
-    }
-    return 0;
-}
