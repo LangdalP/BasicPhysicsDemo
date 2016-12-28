@@ -8,11 +8,6 @@
 
 using json = nlohmann::json;
 
-
-/*
- * Need a way to specify position, type, angle etc
- */
-
 // Input: The json for a single rigidBody
 b2ObjectDef load_body_from_json(json j)
 {
@@ -85,8 +80,41 @@ ObjectStore::~ObjectStore()
 
 b2ObjectDef ObjectStore::GetObject(std::string name) const
 {
+    auto obj = m_objects.at(name);
+    for (int i = 0; i < (int)obj.fDefs.size(); ++i)
+        obj.fDefs[i].shape = &obj.pShapes[i];
     return m_objects.at(name);
 }
+
+b2ObjectDef ObjectStore::GetObjectAsDynamic(std::string name) const
+{
+    auto obj = m_objects.at(name);
+    obj.bDef.type = b2_dynamicBody;
+    for (int i = 0; i < (int)obj.fDefs.size(); ++i)
+        obj.fDefs[i].shape = &obj.pShapes[i];
+    return obj;
+}
+
+b2ObjectDef ObjectStore::GetObjectAtPos(std::string name, float x, float y) const
+{
+    auto obj = m_objects.at(name);
+    obj.bDef.position.Set(x, y);
+    for (int i = 0; i < (int)obj.fDefs.size(); ++i)
+        obj.fDefs[i].shape = &obj.pShapes[i];
+    return obj;
+}
+
+b2ObjectDef ObjectStore::GetObjectAsDynamicAtPos(std::string name, float x, float y) const
+{
+    auto obj = m_objects.at(name);
+    obj.bDef.type = b2_dynamicBody;
+    obj.bDef.position.Set(x, y);
+    for (int i = 0; i < (int)obj.fDefs.size(); ++i)
+        obj.fDefs[i].shape = &obj.pShapes[i];
+    return obj;
+}
+
+/////////////////// Done with class ///////////////
 
 b2World* CreateEmptyWorld()
 {
@@ -132,29 +160,12 @@ b2World* CreateTestWorld()
     groundBody->CreateFixture( &groundFixtureDef );
 
     const auto objStore = CreateStoreFromFile("objs.json");
-    b2ObjectDef eggDef = objStore.GetObject("Egg");
-    eggDef.bDef.position.Set(-2, 3);
-    std::cout << "Trying to create egg body" << std::endl;
-    auto * body = world->CreateBody( &eggDef.bDef );
-    int shapeIdx = 0;
-    for (auto &fix : eggDef.fDefs ) {
-        std::cout << "Trying to create fixture" << std::endl;
-        fix.shape = &eggDef.pShapes[shapeIdx];
-        body->CreateFixture( &fix );
-        ++shapeIdx;
-    }
 
-    b2ObjectDef bananaDef = objStore.GetObject("Banana");
-    bananaDef.bDef.position.Set(5, 5);
-    std::cout << "Trying to create banana body" << std::endl;
-    auto *bananaBody = world->CreateBody( &bananaDef.bDef );
-    shapeIdx = 0;
-    for (auto &fix : bananaDef.fDefs ) {
-        std::cout << "Trying to create fixture" << std::endl;
-        fix.shape = &bananaDef.pShapes[shapeIdx];
-        bananaBody->CreateFixture( &fix );
-        ++shapeIdx;
-    }
+    b2ObjectDef eggObj = objStore.GetObjectAsDynamicAtPos("Egg", -2, 3);
+    CreateBodyFromObject(eggObj, world);
+
+    b2ObjectDef bananaObj = objStore.GetObjectAtPos("Banana", 5, 5);
+    CreateBodyFromObject(bananaObj, world);
 
     return world;
 }
@@ -163,4 +174,13 @@ ObjectStore CreateStoreFromFile(std::string fname)
 {
     const std::vector<b2ObjectDef> bodies = load_bodies_from_file(fname);
     return ObjectStore(bodies);
+}
+
+b2Body* CreateBodyFromObject(b2ObjectDef obj, b2World* world)
+{
+    auto* body = world->CreateBody( &obj.bDef );
+    for (auto &fix : obj.fDefs ) {
+        body->CreateFixture( &fix );
+    }
+    return body;
 }

@@ -12,6 +12,7 @@ struct b2ObjectDef {
     std::vector<b2PolygonShape> pShapes;
     std::vector<b2FixtureDef> fDefs;
     std::string objName;
+    std::string spriteName;
 };
 
 class ObjectStore
@@ -23,11 +24,16 @@ public:
     ~ObjectStore();
 
     b2ObjectDef GetObject(std::string name) const;
+    b2ObjectDef GetObjectAsDynamic(std::string name) const;
+    b2ObjectDef GetObjectAtPos(std::string name, float x, float y) const;
+    b2ObjectDef GetObjectAsDynamicAtPos(std::string name, float x, float y) const;
 };
 
 b2World* CreateEmptyWorld();
 b2World* CreateTestWorld();
 ObjectStore CreateStoreFromFile(std::string fname);
+
+b2Body* CreateBodyFromObject(b2ObjectDef obj, b2World* world);
 
 
 #endif /* ifndef L_WORLD */
